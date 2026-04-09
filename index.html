@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>io</h1>
+    <button onclick = "sendMessage()">click here</button>
+    <div id="class"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io("http://localhost:9090")
+
+        socket.on("connect",()=>{
+            console.log("connected !, my ID:",socket.id)
+          })
+
+        socket.on("message",(data)=>{
+            console.log(`received data ${data}`)
+            document.getElementById('class').innerHTML += `${data}`
+        })
+
+        function sendMessage(){
+            socket.emit('message',"hello")
+        }
+      
+    </script>
+</body>
+</html>

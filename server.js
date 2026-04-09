@@ -6,6 +6,7 @@ import {Server} from 'socket.io'
 const PORT = process.env.PORT || 3000
 
 const app = express()
+app.use(express.static('.'))
 
 const httpServer = http.createServer(app)
 
@@ -17,7 +18,8 @@ io.on("connection",(socket)=>{
     console.log('connection made',socket.id)
 
     socket.on('message',(data)=>{
-        console.log(`message received ${data}`)
+        const message = JSON.stringify(data)
+        console.log(`message received ${message}`)
 
             io.emit('message',data)
     })
