@@ -19,7 +19,15 @@ app.get('/',(req,res)=>{
 })
 
 io.on("connection",(socket)=>{
-    console.log(`new user connected ID: ${socket}`)
+    console.log(`new user connected ID: ${socket.id}`)
+
+    socket.on("message",(data)=>{
+        console.log(`server received :${data}`)
+    })
+
+    socket.on("disconnect",()=>{
+        console.log("user left")
+    })
 })
 
 server.listen(PORT,()=>{
