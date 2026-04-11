@@ -23,6 +23,8 @@ io.on("connection",(socket)=>{
 
     socket.on("message",(data)=>{
         console.log(`server received :${data}`)
+
+        io.emit("message", data)
     })
 
     socket.on("disconnect",()=>{
