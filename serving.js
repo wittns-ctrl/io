@@ -48,6 +48,15 @@ io.on("connection",(socket)=>{
 
     socket.on("private message",({to,message})=>{
         console.log(`server received :${message}`)
+        const msg = {
+            type: "private",
+            to:to,
+            from:socket.username,
+            message
+        }
+
+        messageStore.push(msg)
+
         const username = socket.username
         io.to(to).emit("chat message",`from : ${username} ${message}` )
     })
@@ -55,6 +64,13 @@ io.on("connection",(socket)=>{
     socket.on("group chat",({to,message})=>{
         const username = socket.username
 
+        const msg = {
+            type: "group",
+            room: to,
+            from: socket.username,
+            message
+        }
+       messageStore.push(msg)
         console.log("group received :",message)
 
         io.to(to).emit("chat message",`from: ${username}  message: ${message}`)
