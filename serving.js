@@ -17,14 +17,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 app.get('/',(req,res)=>{
     res.sendFile(join(__dirname,'server.html'))
 })
+const users = {}
 
 io.on("connection",(socket)=>{
     console.log(`new user connected ID: ${socket.id}`)
 
-    socket.on("message",(data)=>{
-        console.log(`server received :${data}`)
+    socket.on("username",(username)=> {
+        users[socket.id] = username
 
-        io.emit("message", data)
+        console.log(`new user registered: ${username}`)
+    })
+
+    socket.on("chat room",(room)=>{
+        socket.join(room)
+        socket.emit("message",`you are in room ${room}`)
+    })
+
+    socket.on("private message",(to,message)=>{
+        console.log(`server received :${message}`)
+        io.to(to).emit("chat", message)
     })
 
     socket.on("disconnect",()=>{
