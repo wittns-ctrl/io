@@ -24,7 +24,7 @@ io.on("connection",(socket)=>{
 
     socket.on("username",(username)=> {
         users[socket.id] = username
-
+       socket.join(username)
         console.log(`new user registered: ${username}`)
     })
 
@@ -33,9 +33,10 @@ io.on("connection",(socket)=>{
         socket.emit("message",`you are in room ${room}`)
     })
 
-    socket.on("private message",(to,message)=>{
+    socket.on("private message",({to,message})=>{
         console.log(`server received :${message}`)
-        io.to(to).emit("chat", message)
+        const username = users[socket.id]
+        io.to(to).emit("chat message",`from : ${username} ${message}` )
     })
 
     socket.on("disconnect",()=>{
