@@ -19,13 +19,26 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 app.get('/',(req,res)=>{
     res.sendFile(join(__dirname,'server.html'))
 })
-const users = {}
+//const users = {}
+const messageStore = []
+
+
+io.use((socket,next)=>{
+const username = socket.handshake.auth.username;
+
+if(!username) {
+    return next(new Error("no username"))
+}
+
+socket.username = username
+next()
+})
 
 io.on("connection",(socket)=>{
     console.log(`new user connected ID: ${socket.id}`)
 
     socket.on("username",(username)=> {
-        users[socket.id] = username
+        socket.username = username
        socket.join(username)
         console.log(`new user registered: ${username}`)
     })
@@ -37,12 +50,12 @@ io.on("connection",(socket)=>{
 
     socket.on("private message",({to,message})=>{
         console.log(`server received :${message}`)
-        const username = users[socket.id]
+        const username = socket.username
         io.to(to).emit("chat message",`from : ${username} ${message}` )
     })
 
     socket.on("group chat",({to,message})=>{
-        const username = users[socket.id]
+        const username = socket.username
 
         console.log("group received :",message)
 

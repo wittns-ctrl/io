@@ -32,7 +32,11 @@
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io()
+        const socket = io({
+          auth: {
+            username: prompt("enter username")
+          }
+        })
 
         const form = document.getElementById("form")
         const input = document.getElementById("input")
