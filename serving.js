@@ -9,9 +9,7 @@ const PORT = process.env.PORTS || 4000
 const app  = express()
 
 const server = http.createServer(app)
-const io = new Server(server, {
-    cors : {origin: "*"}
-},{
+const io = new Server(server,{
     connectionStateRecovery: {}
 })
 const __dirname = dirname(fileURLToPath(import.meta.url))
