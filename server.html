@@ -61,12 +61,15 @@
                 socket.emit("private message",{
                   to,message
                   
-                })
-                    input.value = ""
+                })    
             }
             else {
+          const to = currentroom
+          const message = input.value
 
+        socket.emit("group chat",{to,message})
             }
+              input.value = ""
         })
         socket.on("chat message",(msg)=>{
           const item = document.createElement("li")

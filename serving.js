@@ -30,13 +30,21 @@ io.on("connection",(socket)=>{
 
     socket.on("chat room",(room)=>{
         socket.join(room)
-        socket.emit("message",`you are in room ${room}`)
+        socket.emit("chat message",`you are in room ${room}`)
     })
 
     socket.on("private message",({to,message})=>{
         console.log(`server received :${message}`)
         const username = users[socket.id]
         io.to(to).emit("chat message",`from : ${username} ${message}` )
+    })
+
+    socket.on("group chat",({to,message})=>{
+        const username = users[socket.id]
+
+        console.log("group received :",message)
+
+        io.to(to).emit("chat message",`from: ${username}  message: ${message}`)
     })
 
     socket.on("disconnect",()=>{
