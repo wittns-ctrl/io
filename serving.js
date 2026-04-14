@@ -5,100 +5,61 @@ import http from 'http'
 import {Server} from 'socket.io'
 import {fileURLToPath} from 'node:url'
 import {dirname,join} from 'path'
+
 const PORT = process.env.PORTS || 4000
 const app  = express()
 
 const server = http.createServer(app)
 const io = new Server(server,{
-    connectionStateRecovery: {}
+    cors: {origin : "*"}
 })
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 app.get('/',(req,res)=>{
     res.sendFile(join(__dirname,'server.html'))
 })
 
-const messageStore = []
-
-
-io.use((socket,next)=>{
-const username = socket.handshake.auth.username;
-
-if(!username) {
-    return next(new Error("no username"))
-}
-
-socket.username = username
-next()
-})
+const users = {}
 
 io.on("connection",(socket)=>{
     console.log(`new user connected ID: ${socket.id}`)
 
-    if(socket.recovered){
-        console.log("connection recovered")
+    socket.on("username",(username)=> {
+        users[socket.id] = username
 
-        const username = socket.username
+        socket.join(username)
 
-        const missed = messageStore.filter( msg=>  
-            msg.to === username || msg.from === username
-        )
-
-        missed.forEach(missin => {
-          socket.emit("chat message",`from: ${missin.from} ${missin.message}`)
-        })
-    }
-    else {
-        console.log("new connection")
-    }
-
-    socket.on("username",(usename)=> {
-        socket.username = usename
-       socket.join(usename)
-        console.log(`new user registered: ${usename}`)
+        console.log(`new user registered: ${username}`)
     })
 
     socket.on("chat room",(room)=>{
         socket.join(room)
-        socket.emit("chat message",`you are in room ${room}`)
+        socket.emit("chat",`you are in room ${room}`)
     })
 
     socket.on("private message",({to,message})=>{
+        const from = users[socket.id]
+
         console.log(`server received :${message}`)
-        const msg = {
-            type: "private",
-            to:to,
-            from:socket.username,
-            message
-        }
 
-        messageStore.push(msg)
-
-        const username = socket.username
-        io.to(to).emit("chat message",`from : ${username} ${message}` )
+        io.to(to).emit("chat",`(Private) ${from}: ${message}`)
     })
 
     socket.on("group chat",({to,message})=>{
-        const username = socket.username
+        const from = users[socket.id]
 
-        const msg = {
-            type: "group",
-            room: to,
-            from: socket.username,
-            message
-        }
-       messageStore.push(msg)
         console.log("group received :",message)
 
-        io.to(to).emit("chat message",`from: ${username}  message: ${message}`)
+        io.to(to).emit("chat",`${from}: ${message}`)
     })
 
     socket.on("disconnect",()=>{
         console.log("user left")
+        delete users[socket.id]
     })
 })
 
 server.listen(PORT,()=>{
     console.log(`server running on port :${PORT}`)
 })
-
