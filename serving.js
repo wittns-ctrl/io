@@ -53,7 +53,15 @@ io.on("connection",(socket)=>{
         socket.emit("chat",`you are in room ${room}`)
     })
 
-    socket.on("private message",({to,message})=>{
+    socket.on("private message",async({to,message})=>{
+        let result;
+        try{
+          result = await db.run('INSERT INTO messages (content) VALUES(?)',message)
+        }
+        catch(e){
+            console.error('storage error:',e.message)
+            return 
+        }
         const from = users[socket.id]
 
         console.log(`server received :${message}`)
@@ -61,7 +69,14 @@ io.on("connection",(socket)=>{
         io.to(to).emit("chat",`(Private) ${from}: ${message}`)
     })
 
-    socket.on("group chat",({to,message})=>{
+    socket.on("group chat",async({to,message})=>{
+        let outcome;
+        try{
+            outcome = await db.run('INSERT INTO messages (content) VALUES (?) ',message)
+        }catch(e){
+            console.error("_grpstorage error",e.message)
+            return;
+        }
         const from = users[socket.id]
 
         console.log("group received :",message)
