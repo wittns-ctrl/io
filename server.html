@@ -1,86 +1,70 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Socket.IO chat</title>
-    <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+<body>
+  <ul id="messages"></ul>
 
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+  <input placeholder="username" id="user">
+  <button onclick="register()">register</button>
 
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
-    </style>
-  </head>
-  <body>
-   
+  <input placeholder="roomname" id="room">
+  <button onclick="room()">chat room</button>
 
-    <input  placeholder="username" id="user">
-    <button onclick="register()">register</button>
-    <br><br>
-    <input  placeholder="roomname" id="room">
-    <button onclick="room()">chat room</button>
+  <form id="form">
+    <input id="input" autocomplete="off" />
+    <button>Send</button>
+  </form>
 
-     <ul id="messages"></ul>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io()
 
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io({
-          auth: {
-            username: prompt("enter username")
-          }
-        })
+    const form = document.getElementById("form")
+    const input = document.getElementById("input")
+    const messages = document.getElementById("messages")
 
-        const form = document.getElementById("form")
-        const input = document.getElementById("input")
-        const messages = document.getElementById("messages")
+    let currentroom = null;
+    let username = null;
 
-        let currentroom = null;
-        let username = null;
+    function room(){
+      currentroom = document.getElementById("room").value
+      socket.emit("chat room", currentroom)
+    }
 
-        function room(){
-          currentroom = document.getElementById("room").value
+    function register(){
+      username = document.getElementById("user").value
+      socket.emit("username", username)
+    }
 
-          socket.emit("chat room",currentroom)
+    form.addEventListener("submit",(e)=>{
+        e.preventDefault()
+
+        if(!input.value) return;
+
+        if(input.value.startsWith('@')){
+            const parts = input.value.split(' ')
+            const to = parts[0].substring(1)
+            const message = parts.slice(1).join(' ')
+
+            socket.emit("private message",{
+              to,
+              message
+            })
+        } else {
+            socket.emit("group chat",{
+              to: currentroom,
+              message: input.value
+            })
         }
 
-        function register(){
-           username = document.getElementById("user").value
-           socket.emit("username",username)
-        }
+        input.value = ""
+    })
 
-        form.addEventListener("submit",(e)=>{
-            e.preventDefault()
-            if(input.value.startsWith('@')){
-              const parts = input.value.split(' ')
-              const to = parts[0].substring(1)
-              const message = parts.slice(1).join(' ')
-                socket.emit("private message",{
-                  to,message
-                  
-                })    
-            }
-            else {
-          const to = currentroom
-          const message = input.value
-
-        socket.emit("group chat",{to,message})
-            }
-              input.value = ""
-        })
-        socket.on("chat message",(msg)=>{
-          const item = document.createElement("li")
-          item.textContent = msg     
-          messages.appendChild(item)
-          window.scrollTo(0,document.body.scrollHeight)
-         })
-    </script>
-  </body>
+    socket.on("chat",(msg)=>{
+      const item = document.createElement("li")
+      item.textContent = msg     
+      messages.appendChild(item)
+      window.scrollTo(0,document.body.scrollHeight)
+    })
+  </script>
+</body>
 </html>
