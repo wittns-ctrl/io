@@ -5,6 +5,21 @@ import http from 'http'
 import {Server} from 'socket.io'
 import {fileURLToPath} from 'node:url'
 import {dirname,join} from 'path'
+import sqlite3 from 'sqlite3'
+import {open} from 'sqlite'
+
+const db = await open({
+    filename: 'chat.db',
+    driver: sqlite3.Database
+})
+
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS messages(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_offset TEXT UNIQUE,
+    content TEXT
+    )
+    `)
 
 const PORT = process.env.PORTS || 4000
 const app  = express()
