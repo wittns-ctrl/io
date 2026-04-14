@@ -35,10 +35,27 @@ next()
 io.on("connection",(socket)=>{
     console.log(`new user connected ID: ${socket.id}`)
 
-    socket.on("username",(username)=> {
-        socket.username = username
-       socket.join(username)
-        console.log(`new user registered: ${username}`)
+    if(socket.recovered){
+        console.log("connection recovered")
+
+        const username = socket.username
+
+        const missed = messageStore.filter( msg=>  
+            msg.to === username || msg.from === username
+        )
+
+        missed.forEach(missin => {
+          socket.emit("chat message",`from: ${missin.from} ${missin.message}`)
+        })
+    }
+    else {
+        console.log("new connection")
+    }
+
+    socket.on("username",(usename)=> {
+        socket.username = usename
+       socket.join(usename)
+        console.log(`new user registered: ${usename}`)
     })
 
     socket.on("chat room",(room)=>{
