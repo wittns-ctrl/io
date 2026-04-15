@@ -13,14 +13,15 @@ const db = await open({
     driver: sqlite3.Database
 })
 
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS messages(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    client_offset TEXT UNIQUE,
-    to TEXT,
-    content TEXT
-    )
-    `)
+
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS messages(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        client_offset TEXT UNIQUE,
+        to TEXT,
+        content TEXT
+        );
+        `)
 
 const PORT = process.env.PORTS || 4000
 const app  = express()
