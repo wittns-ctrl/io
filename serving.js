@@ -72,6 +72,7 @@ io.on("connection",async(socket)=>{
         io.to(to).emit("chat",`(Private) ${from}: ${message}`)
     })
 
+
     socket.on("group chat",async({to,message})=>{
         let outcome;
         try{
@@ -86,7 +87,10 @@ io.on("connection",async(socket)=>{
 
         io.to(to).emit("chat",`${from}: ${message}`)
     })
-    
+
+
+
+    //sending recoveries manually
        if(!socket.recovered){
 
         try{
