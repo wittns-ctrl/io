@@ -98,7 +98,7 @@ io.on("connection",async(socket)=>{
             await db.each('SELECT to,content FROM messages WHERE id > ?',
                 [socket.handshake.auth.serverOffset || 0],
                 (_err,row) => {
-                    socket.emit("chat",`from : ${row.to} ${row.content}`)
+                    socket.emit("chat",`from : ${row.to}  message:${row.content}`)
                 }
             )
         }catch(e){
