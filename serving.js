@@ -60,7 +60,7 @@ io.on("connection",async(socket)=>{
     socket.on("private message",async({to,message})=>{
         let result;
         try{
-          result = await db.run('INSERT INTO messages (to,content) VALUES(?,?)',[to,message])
+          result = await db.run("INSERT INTO messages (to,content) VALUES (?,?) ",[to,message])
         }
         catch(e){
             console.error('storage error:',e.message)
