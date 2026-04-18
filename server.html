@@ -16,10 +16,13 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    let counter = 0;
     const socket = io({
     auth: {
       serverOffset : 0
-    }
+    },
+    ackTimeout: 10000,
+    retries: 3
     })
 
     const form = document.getElementById("form")
@@ -28,7 +31,7 @@
 
     let currentroom = null;
     let username = null;
-
+    
     function room(){
       currentroom = document.getElementById("room").value
       socket.emit("chat room", currentroom)
