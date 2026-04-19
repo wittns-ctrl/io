@@ -46,20 +46,23 @@
         e.preventDefault()
 
         if(!input.value) return;
+        let clientOffset = `${socket.id}-${counter++}`
 
         if(input.value.startsWith('@')){
             const parts = input.value.split(' ')
             const to = parts[0].substring(1)
-            const message = parts.slice(1).join(' ')
+            const message = parts.slice(1).join(' ')          
 
             socket.emit("private message",{
               to,
-              message
+              message,
+              clientOffset
             })
         } else {
             socket.emit("group chat",{
               to: currentroom,
-              message: input.value
+              message: input.value,
+              clientOffset
             })
         }
 

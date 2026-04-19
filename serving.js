@@ -18,7 +18,7 @@ const db = await open({
         CREATE TABLE IF NOT EXISTS messages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         client_offset TEXT UNIQUE,
-        to TEXT,
+        receiver TEXT,
         content TEXT
         );
         `)
@@ -60,7 +60,7 @@ io.on("connection",async(socket)=>{
     socket.on("private message",async({to,message})=>{
         let result;
         try{
-          result = await db.run("INSERT INTO messages (to,content) VALUES (?,?) ",[to,message])
+          result = await db.run("INSERT INTO messages (receiver,content) VALUES (?,?) ",[to,message])
         }
         catch(e){
             console.error('storage error:',e.message)
@@ -77,7 +77,7 @@ io.on("connection",async(socket)=>{
     socket.on("group chat",async({to,message})=>{
         let outcome;
         try{
-            outcome = await db.run('INSERT INTO messages (to,content) VALUES (?,?) ',[to,message])
+            outcome = await db.run('INSERT INTO messages (receiver,content) VALUES (?,?) ',[to,message])
         }catch(e){
             console.error("_grpstorage error",e.message)
             return;
@@ -95,7 +95,7 @@ io.on("connection",async(socket)=>{
        if(!socket.recovered){
 
         try{
-            await db.each('SELECT to,content FROM messages WHERE id > ?',
+            await db.each('SELECT receiver,content FROM messages WHERE id > ?',
                 [socket.handshake.auth.serverOffset || 0],
                 (_err,row) => {
                     socket.emit("chat",`from : ${row.to}  message:${row.content}`)
