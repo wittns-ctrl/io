@@ -61,11 +61,12 @@ io.on("connection",async(socket)=>{
         let result;
         try{
           result = await db.run("INSERT INTO messages (receiver,content,client_offset) VALUES (?,?,?) ",[to,message,clientOffset])
-          callback()
+          if(callback)callback()
         }
         catch(e){
             if(e.errno === 19){
-            callback()
+            if(callback)callback()
+                return
             console.error('storage error:',e.message)
             }
            else{
@@ -77,17 +78,19 @@ io.on("connection",async(socket)=>{
         console.log(`server received :${message}`)
 
         io.to(to).emit("chat",`(Private) ${from}: ${message}`)
-        Callback()
+        if(callback)callback()
     })
 
 
     socket.on("group chat",async({to,message},clientOffset,callback)=>{
         let outcome;
         try{
-            outcome = await db.run('INSERT INTO messages (receiver,content,client_offset) VALUES (?,?) ',[to,message,clientOffset])
+            outcome = await db.run('INSERT INTO messages (receiver,content,client_offset) VALUES (?,?,?) ',[to,message,clientOffset])
+            if(callback)callback()
         }catch(e){
             if(e.errno === 19){
-                callback()
+                if(callback)callback()
+                    return;
                 console.error("_grpstorage error",e.message)
             }
             else{
@@ -99,7 +102,7 @@ io.on("connection",async(socket)=>{
         console.log("group received :",message)
 
         io.to(to).emit("chat",`${from}: ${message}`)
-        callback()
+       if(callback)callback()
     })
 
 
@@ -111,7 +114,7 @@ io.on("connection",async(socket)=>{
             await db.each('SELECT receiver,content FROM messages WHERE id > ?',
                 [socket.handshake.auth.serverOffset || 0],
                 (_err,row) => {
-                    socket.emit("chat",`from : ${row.to}  message:${row.content}`)
+                    socket.emit("chat",`from : ${row.receiver}  message:${row.content}`)
                 }
             )
         }catch(e){
