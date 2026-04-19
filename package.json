@@ -12,6 +12,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@socket.io/cluster-adapter": "^0.3.0",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "socket.io": "^4.8.3",
