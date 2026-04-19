@@ -57,36 +57,49 @@ io.on("connection",async(socket)=>{
         socket.emit("chat",`you are in room ${room}`)
     })
 
-    socket.on("private message",async({to,message})=>{
+    socket.on("private message",async({to,message},clientOffset,callback)=>{
         let result;
         try{
-          result = await db.run("INSERT INTO messages (receiver,content) VALUES (?,?) ",[to,message])
+          result = await db.run("INSERT INTO messages (receiver,content,client_offset) VALUES (?,?,?) ",[to,message,clientOffset])
+          callback()
         }
         catch(e){
+            if(e.errno === 19){
+            callback()
             console.error('storage error:',e.message)
+            }
+           else{
             return 
+           }
         }
         const from = users[socket.id]
 
         console.log(`server received :${message}`)
 
         io.to(to).emit("chat",`(Private) ${from}: ${message}`)
+        Callback()
     })
 
 
-    socket.on("group chat",async({to,message})=>{
+    socket.on("group chat",async({to,message},clientOffset,callback)=>{
         let outcome;
         try{
-            outcome = await db.run('INSERT INTO messages (receiver,content) VALUES (?,?) ',[to,message])
+            outcome = await db.run('INSERT INTO messages (receiver,content,client_offset) VALUES (?,?) ',[to,message,clientOffset])
         }catch(e){
-            console.error("_grpstorage error",e.message)
+            if(e.errno === 19){
+                callback()
+                console.error("_grpstorage error",e.message)
+            }
+            else{
             return;
+            }
         }
         const from = users[socket.id]
 
         console.log("group received :",message)
 
         io.to(to).emit("chat",`${from}: ${message}`)
+        callback()
     })
 
 
